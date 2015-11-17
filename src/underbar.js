@@ -340,6 +340,23 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    if (array.length === 1){
+      return array;
+    }
+    var shuffleArr = array.slice();
+    var index, temp; 
+    var counter = shuffleArr.length;
+    while (counter > 0){
+      index = Math.floor(Math.random() * counter);
+      counter--;
+      temp = shuffleArr[counter];
+      shuffleArr[counter] = shuffleArr[index];
+      shuffleArr[index] = temp;
+    }
+    if (shuffleArr.join() === array.join()){
+      _.shuffle(array);
+    }
+    return shuffleArr;
   };
 
 
@@ -354,6 +371,20 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+
+    if (typeof functionOrKey === 'function'){
+      return _.map(collection, function(value){
+        // functionOrKey(value);
+        functionOrKey.call(this, value);
+      });  
+    } else {
+      return _.map(collection, function(value){
+        value[functionOrKey].apply(value)
+      });
+    }
+
+    
+    
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -361,6 +392,16 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    if (typeof iterator === 'string'){
+      collection.sort(function(a,b){
+        return a[iterator] - b[iterator];
+      });
+    } else {
+      collection.sort(function(a,b){
+        return iterator(a) - iterator(b);
+      })
+    }
+    return collection;
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -369,6 +410,16 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    var args = Array.prototype.slice.call(arguments);
+    var results = [];
+    for (var j = 0; j <args[0].length; j++){
+      var tempArr = [];
+      for(var i = 0; i < args.length; i++){
+        tempArr.push(args[i][j]);
+      }
+      results.push(tempArr);
+    }
+    return results;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
