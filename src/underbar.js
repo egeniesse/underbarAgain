@@ -354,7 +354,7 @@
       shuffleArr[index] = temp;
     }
     if (shuffleArr.join() === array.join()){
-      _.shuffle(array);
+      return _.shuffle(array);
     }
     return shuffleArr;
   };
@@ -373,13 +373,15 @@
   _.invoke = function(collection, functionOrKey, args) {
 
     if (typeof functionOrKey === 'function'){
+      console.log('function');
       return _.map(collection, function(value){
         // functionOrKey(value);
-        functionOrKey.call(this, value);
+        return functionOrKey.apply(value, args);
       });  
     } else {
+      console.log('method');
       return _.map(collection, function(value){
-        value[functionOrKey].apply(value)
+        return value[functionOrKey].apply(value)
       });
     }
 
@@ -426,17 +428,64 @@
   // The new array should contain all elements of the multidimensional array.
   //
   // Hint: Use Array.isArray to check if something is an array
-  _.flatten = function(nestedArray, result) {
+  _.flatten = function(nestedArray) {
+    var array = [];
+    
+    var unnest = function(arr){
+      for (var i = 0; i < arr.length; i++){
+        if (Array.isArray(arr[i])){
+          unnest(arr[i]);
+        } else {
+          array.push(arr[i]);
+        }
+      }
+    };
+
+    unnest(nestedArray);
+    return array;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var cache = {};
+    var args = Array.prototype.slice.call(arguments);
+    var results = [];
+
+    for (var i = 0; i < args.length; i++){
+      for (var j = 0; j < args[i].length; j++){
+        if (cache.hasOwnProperty(args[i][j])){
+          cache[args[i][j]]++;
+        } else {
+          cache[args[i][j]] = 1;
+        }
+      }
+    }
+
+    for (var key in cache){
+      if (cache[key] === args.length){
+        results.push(key);
+      }
+    }
+
+    return results;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    var results = [];
+    var elements = [];
+    for (var j = 0; j < args.length; j++){
+      elements = elements.concat(args[j]);
+    }
+    for (var i = 0; i < array.length; i++){
+      if (_.indexOf(elements, array[i]) === -1){
+        results.push(array[i]);
+      }
+    }
+    return results;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
@@ -445,5 +494,14 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
+    var timer;
+    return function(){
+      var currTime = new Date();
+      var elapsed = currTime - timer;
+      if (timer === undefined || elapsed > wait){
+        func.apply(this, arguments);
+        timer = currTime;
+      }
+    };
   };
 }());
