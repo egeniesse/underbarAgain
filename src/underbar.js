@@ -237,11 +237,28 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var arg = Array.prototype.slice.call(arguments, 1);
+    return _.reduce(arg, function(obj, currObject){
+      for (var key in currObject){
+        obj[key] = currObject[key];
+      }
+      return obj;
+    }, obj);
+
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var arg = Array.prototype.slice.call(arguments, 1);
+    return _.reduce(arg, function(obj, currObject){
+      for (var key in currObject){
+        if (!obj.hasOwnProperty(key)){
+          obj[key] = currObject[key];
+        }
+      }
+      return obj;
+    }, obj);
   };
 
 
@@ -285,6 +302,17 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var storage = {};
+     return function(){
+      var arg = Array.prototype.slice.call(arguments);
+      if (!storage.hasOwnProperty(arg)){
+        storage[arg] = func.apply(this, arg);
+        
+      }
+      
+      return storage[arg];
+    }
+    
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -294,6 +322,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var arg = Array.prototype.slice.call(arguments, 2);
+    setTimeout(function(){
+      func.apply(this, arg);
+    }, wait)
   };
 
 
